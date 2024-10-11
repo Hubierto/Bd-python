@@ -1,44 +1,101 @@
 import os
-from sqlalchemy import Integer, create_engine, Column, String
+from sqlalchemy import create_engine, Column, String, Integer
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-# Setup database
+# Criando banco de dados.
 db = create_engine("sqlite:///meubanco.db")
+
+# Conexão com o banco de dados.
 Session = sessionmaker(bind=db)
 session = Session()
+
+# Criando tabela.
 Base = declarative_base()
 
-class Aluno(Base):
-    __tablename__ = "alunos"
+class Usuario(Base):
+    # Definindo nome da tabela.
+    __tablename__ = "usuarios"
 
-    ra = Column(Integer, primary_key=True, autoincrement=True)
-    nome = Column(String)
-    idade = Column(String)
-    email = Column(String)
+    # Definindo atributos da tabela.
+    id = Column("id", Integer, primary_key=True, autoincrement=True)
+    nome = Column("nome", String)
+    email = Column("email", String)
+    senha = Column("senha", String)
 
-    def __init__(self, ra: int, nome: str, idade: str, email: str) -> None:
-        self.ra = ra
+    # Definindo atributos da classe.
+    def __init__(self, nome: str, email: str, senha: str):
         self.nome = nome
-        self.idade = idade
         self.email = email
+        self.senha = senha
 
-# Create the database tables
+# Criando tabela no banco de dados.
 Base.metadata.create_all(bind=db)
 
-# Input loop to add alunos
+os.system("cls || clear")
+
+# Salvar no banco de dados.
+# usuario = Usuario("Marta", "marta@gmail.com", "123")
+# usuario = Usuario(senha="123", nome="José", email="jose@gmail.com")
+
 for i in range(2):
-    ra = int(input("Digite seu RA: "))  # Changed to int
     nome = input("Digite seu nome: ")
-    idade = input("Digite sua idade: ")
-    email = input("Digite seu email: ")
+    email = input("Digite seu e-mail: ")
+    senha=  input("Digite sua senha: ")
 
-    aluno = Aluno(ra=ra, nome=nome, idade=idade, email=email)
-    session.add(aluno)
+    usuario =  Usuario(senha=senha, nome=nome, email=email)
+    session.add(usuario)
+    session.commit()
+    print()
 
-# Commit the session once after all additions
+# Mostrando conteúdo do banco de dados.
+print("\nListando usuários no banco de dados.")
+lista_usuarios = session.query(Usuario).all()
+
+for usuario in lista_usuarios:
+    print(f"{usuario.id} - {usuario.nome} - {usuario.email}")
+
+# Deletando um usuário.
+print("\nExcluindo usuário do banco de dados")
+email_usuario = input("\nInforme o email do usúario: ")
+usuario = session.query(Usuario).filter_by(email = email_usuario).first()
+
+if usuario:
+    session.delete(usuario)
+    session.commit()
+    print("\nUsuário deletado com sucesso.")
+else:
+    print("USUÁRIO NÃO ENCONTRADO")
+
+
+# Mostrando conteúdo do banco de dados.
+print("\nListando usuários no banco de dados.")
+lista_usuarios = session.query(Usuario).all()
+
+for usuario in lista_usuarios:
+    print(f"{usuario.id} - {usuario.nome} - {usuario.email}")
+
+#Atualizar um usuário
+print("\nAtualizando os dados de um usuário.")
+
+email_usuario = input("\nInforme o email do usúario: ")
+
+usuario = session.query(Usuario).filter_by(email = email_usuario).first()
+if usuario:
+    nome = input("Digite seu nome: ")
+    email = input("Digite seu e-mail: ")
+    senha=  input("Digite sua senha: ")
+else:
+    print("USUÁRIO NÃO ENCONTRADO")
 session.commit()
 
-# Query and print all alunos
-lista_alunos = session.query(Aluno).all()
-for aluno in lista_alunos:
-    print(f"{aluno.ra} - {aluno.nome} - {aluno.idade} - {aluno.email}")
+print("\nPesquisando o usuário pelo email")
+
+email_usuario = input("\nInforme o email do usúario: ")
+
+usuario = session.query(Usuario).filter_by(email = email_usuario).first()
+if usuario:
+    print(f"{usuario.id} - {usuario.nome} - {usuario.email}")
+else:
+    print("USUÁRIO NÃO ENCONTRADO")
+
+session.close
